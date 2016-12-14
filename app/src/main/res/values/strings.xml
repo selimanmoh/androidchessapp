@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">ChessApp</string>
+    <string name="AI">AI</string>
+    <string name="Undo">Undo</string>
+    <string name="Draw">Draw</string>
+    <string name="Resign">Resign</string>
+</resources>
