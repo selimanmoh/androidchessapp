@@ -56,6 +56,11 @@ public class Chess extends AppCompatActivity {
 	public static String nextCoords;
 	public static int turn;
 	public static boolean undoed = false;
+	public static int undoCount = 0;
+	public static String input;
+	public static boolean draw = false;
+	public static boolean gameContinue = true;
+
 
 	/*
 	 * @param args unused
@@ -74,6 +79,10 @@ public class Chess extends AppCompatActivity {
 		chessGrid = (GridView) findViewById(R.id.ChessGrid);
 		imgAdapter = new ImageAdapter(this);
 		Button undoButton = (Button) findViewById(R.id.buttonUndo);
+		Button aiButton = (Button) findViewById(R.id.buttonAI);
+		Button drawButton = (Button) findViewById(R.id.buttonDraw);
+		Button resignButton = (Button) findViewById(R.id.buttonResign);
+
 		chessGrid.setAdapter(imgAdapter);
 		chessGrid.setOnItemClickListener(new OnItemClickListener() {
 			@Override
@@ -96,26 +105,101 @@ public class Chess extends AppCompatActivity {
 
 			@Override
 			public void onClick(View view) {
-				undoed = true;
-				pausedGame = false;
-				if(inputs.size() > 0){
-					for(String input: inputs) System.out.println("inputs: " + input);
-					inputs.remove(inputs.size()-1);
-					Chess.game = StreamChess.streamChess(inputs);
-					Chess.game.printBoard();
+				if (undoCount == 0) {
+					undoCount++;
+					undoed = true;
+					pausedGame = false;
+					if (inputs.size() > 0) {
+						inputs.remove(inputs.size() - 1);
+						Chess.game = StreamChess.streamChess(inputs);
+						Chess.game.printBoard();
 
 
+						runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								imgAdapter.paintBoard();
+								imgAdapter.notifyDataSetChanged();
+
+							}
+						});
+
+					}
+				} else {
+					Toast.makeText(getApplicationContext(), "Cannot undo more than once per turn!", Toast.LENGTH_LONG).show();
+				}
+			}
+		});
+
+		aiButton.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View view) {
+				ArrayList<ChessPiece> arrRandom = new ArrayList<ChessPiece>();
+				boolean looking = true;
+				while(looking){
+					for(int x = 0; x < 8; x++){
+						for(int y = 0; y < 8; y++){
+							if(Chess.game.board[x][y].capacity!=null && Chess.game.board[x][y].capacity.getColor() == turn){
+								arrRandom.add(Chess.game.board[x][y].capacity);
+							}
+						}
+					}
+
+					ChessPiece randomPiece = arrRandom.get((int)(Math.random()*arrRandom.size()));
+					outerloop:
+					for(int i = 0; i < 8*Math.random(); i++){
+						for(int j = 0; j < 8*Math.random(); j++){
+							for(int n = 0; n < 8*Math.random(); n++){
+								for(int m = 0; m < 8*Math.random(); m++){
+									if(Chess.game.board[i][j].capacity == randomPiece && randomPiece.makeMove(i,j,n,m)){
+										looking = false;
+										initialCoords = "" + j + i;
+										nextCoords = "" + m + n;
+										pausedGame = false;
+										break outerloop;
+									}
+								}
+							}
+						}
+					}
+				}
 					runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
 							imgAdapter.paintBoard();
 							imgAdapter.notifyDataSetChanged();
 
-						}
-					});
+							}
+						});
+
+			}
+		});
+
+		drawButton.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View view) {
+				if (draw) {
+					Toast.makeText(getApplicationContext(), "The game ends in a draw!", Toast.LENGTH_LONG).show();
+					gameContinue = false;
+				}
+				else {
+					draw = true;
+					Toast.makeText(getApplicationContext(), "The previous player has initiated a draw!", Toast.LENGTH_LONG).show();
+				}
+						runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								imgAdapter.paintBoard();
+								imgAdapter.notifyDataSetChanged();
+
+							}
+						});
+
 
 				}
-			}
+
 		});
 
 		Thread gameThread = new Thread(gameRun);
@@ -135,12 +219,9 @@ public class Chess extends AppCompatActivity {
 			int initialY;
 			int nextX;
 			int nextY;
-			boolean gameContinue = true;
-			boolean draw = false;
-
-			String input;
 
 			while (gameContinue) {
+				input = "";
 
 				if (turn == 1) {  //White Player's Turn
 					if(!undoed) {
@@ -159,7 +240,7 @@ public class Chess extends AppCompatActivity {
 
 					pausedGame = true;
 					while(pausedGame);
-					if(undoed)
+					if(undoed || !gameContinue || draw)
 						continue;
 					input = initialCoords + nextCoords;
 
@@ -187,7 +268,11 @@ public class Chess extends AppCompatActivity {
 					nextX = Character.getNumericValue(input.charAt(3));
 
 					if ((initialX < 0 || initialX > 7) || (initialY < 0 || initialY > 7) || (nextX < 0 || nextX > 7) || (nextY < 0 || nextY > 7) || game.board[initialX][initialY].capacity == null || game.board[initialX][initialY].capacity.getColor() != turn || !game.board[initialX][initialY].capacity.makeMove(initialX, initialY, nextX, nextY)) {
-						System.out.println("Illegal move, try again\n");
+						runOnUiThread(new Runnable() {
+							public void run() {
+								Toast.makeText(getApplicationContext(), "Illegal move, try again!", Toast.LENGTH_LONG).show();
+							}
+						});
 						draw = false;
 						continue;
 					}
@@ -237,7 +322,11 @@ public class Chess extends AppCompatActivity {
 					Chess.game.board[initialX][initialY].capacity = null;
 
 					if (checkCondition(1)) { //This move will cause a check condition and should be illegal
-						System.out.println("Illegal move, try again\n");
+						runOnUiThread(new Runnable() {
+							public void run() {
+								Toast.makeText(getApplicationContext(), "Illegal move, try again!", Toast.LENGTH_LONG).show();
+							}
+						});
 						draw = false;
 
 						Chess.game.board[initialX][initialY].capacity = Chess.game.board[nextX][nextY].capacity;
@@ -257,6 +346,7 @@ public class Chess extends AppCompatActivity {
 					enpassantReset(0); //changes all current enpassant conditions to false for enemy pawns since a move was made
 
 					turn = 0;
+					undoCount = 0;
 					inputs.add(input);
 					runOnUiThread(new Runnable() {
 						@Override
@@ -294,7 +384,7 @@ public class Chess extends AppCompatActivity {
 
 					pausedGame = true;
 					while(pausedGame);
-					if(undoed)
+					if(undoed || !gameContinue)
 						continue;
 
 					input = initialCoords + nextCoords;
@@ -323,7 +413,11 @@ public class Chess extends AppCompatActivity {
 					nextX = Character.getNumericValue(input.charAt(3));
 
 					if ((initialX < 0 || initialX > 7) || (initialY < 0 || initialY > 7) || (nextX < 0 || nextX > 7) || (nextY < 0 || nextY > 7) || game.board[initialX][initialY].capacity == null || game.board[initialX][initialY].capacity.getColor() != turn || !game.board[initialX][initialY].capacity.makeMove(initialX, initialY, nextX, nextY)) {
-						System.out.println("Illegal move, try again\n");
+						runOnUiThread(new Runnable() {
+							public void run() {
+								Toast.makeText(getApplicationContext(), "Illegal move, try again!", Toast.LENGTH_LONG).show();
+							}
+						});
 						draw = false;
 						continue;
 					}
@@ -374,7 +468,11 @@ public class Chess extends AppCompatActivity {
 
 					Chess.game.board[initialX][initialY].capacity = null;
 					if (checkCondition(0)) { //This move will cause a check condition and should be illegal
-						System.out.println("Illegal move, try again\n");
+						runOnUiThread(new Runnable() {
+							public void run() {
+								Toast.makeText(getApplicationContext(), "Illegal move, try again!", Toast.LENGTH_LONG).show();
+							}
+						});
 						draw = false;
 						Chess.game.board[initialX][initialY].capacity = Chess.game.board[nextX][nextY].capacity;
 						Chess.game.board[nextX][nextY].capacity = temp;
@@ -392,6 +490,7 @@ public class Chess extends AppCompatActivity {
 					enpassantReset(1); //changes all enpassant conditions of enemy pawns to false since a move was made
 
 					turn = 1;
+					undoCount = 0;
 					inputs.add(input);
 					runOnUiThread(new Runnable() {
 						@Override
