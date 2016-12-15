@@ -49,6 +49,9 @@ public class Chess extends AppCompatActivity {
 	public static int bKingX = 7, bKingY = 4, wKingX = 0, wKingY = 4; //initial positions of kings
 	public static boolean targetEnpassant = false;
 	public static boolean pausedGame = true;
+	public static boolean clicked = false;
+	public static String initialCoords;
+	public static String nextCoords;
 
 	/*
 	 * @param args unused
@@ -67,9 +70,17 @@ public class Chess extends AppCompatActivity {
 		chessGrid.setOnItemClickListener(new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-				//int pos = (int)view.getTag();
-				Toast.makeText(getApplicationContext(),
-						"Item Clicked: " + position, Toast.LENGTH_SHORT).show();
+				System.out.println(position);
+				if(clicked){
+					clicked = false;
+					pausedGame = false;
+					nextCoords = (position%8) + (Math.floor((63-position)/8)) + "";
+
+				}
+				else {
+					clicked = true;
+					initialCoords = (position%8) + (Math.floor((63-position)/8)) + "";
+				}
 
 			}
 		});
@@ -95,8 +106,6 @@ public class Chess extends AppCompatActivity {
 			boolean draw = false;
 			game.printBoard();
 
-			//Scanner sc = new Scanner(System.in);
-
 			String input;
 
 			while (gameContinue) {
@@ -108,11 +117,12 @@ public class Chess extends AppCompatActivity {
 							playerTurn.setText("White's Turn");
 						}
 					});
+					pausedGame = true;
 					while(pausedGame);
 
 					input = "draw";
 					System.out.println();
-					input = input.replaceAll("\\s+", "");
+					input = initialCoords + nextCoords;
 
 					if (input.equals("resign")) {
 						System.out.println("Black wins");
@@ -132,10 +142,10 @@ public class Chess extends AppCompatActivity {
 					if (input.contains("draw?"))
 						draw = true;
 
-					initialY = Character.getNumericValue(input.charAt(0)) - 10;
-					initialX = Character.getNumericValue(input.charAt(1)) - 1;
-					nextY = Character.getNumericValue(input.charAt(2)) - 10;
-					nextX = Character.getNumericValue(input.charAt(3)) - 1;
+					initialY = Character.getNumericValue(input.charAt(0));
+					initialX = Character.getNumericValue(input.charAt(1));
+					nextY = Character.getNumericValue(input.charAt(2));
+					nextX = Character.getNumericValue(input.charAt(3));
 
 					if ((initialX < 0 || initialX > 7) || (initialY < 0 || initialY > 7) || (nextX < 0 || nextX > 7) || (nextY < 0 || nextY > 7) || game.board[initialX][initialY].capacity == null || game.board[initialX][initialY].capacity.getColor() != turn || !game.board[initialX][initialY].capacity.makeMove(initialX, initialY, nextX, nextY)) {
 						System.out.println("Illegal move, try again\n");
@@ -242,10 +252,10 @@ public class Chess extends AppCompatActivity {
 					if (input.contains("draw?"))
 						draw = true;
 
-					initialY = Character.getNumericValue(input.charAt(0)) - 10;
-					initialX = Character.getNumericValue(input.charAt(1)) - 1;
-					nextY = Character.getNumericValue(input.charAt(2)) - 10;
-					nextX = Character.getNumericValue(input.charAt(3)) - 1;
+					initialY = Character.getNumericValue(input.charAt(0));
+					initialX = Character.getNumericValue(input.charAt(1));
+					nextY = Character.getNumericValue(input.charAt(2));
+					nextX = Character.getNumericValue(input.charAt(3));
 
 					if ((initialX < 0 || initialX > 7) || (initialY < 0 || initialY > 7) || (nextX < 0 || nextX > 7) || (nextY < 0 || nextY > 7) || game.board[initialX][initialY].capacity == null || game.board[initialX][initialY].capacity.getColor() != turn || !game.board[initialX][initialY].capacity.makeMove(initialX, initialY, nextX, nextY)) {
 						System.out.println("Illegal move, try again\n");
@@ -411,33 +421,53 @@ public class Chess extends AppCompatActivity {
 	public class ImageAdapter extends BaseAdapter
 	{
 		private Context context;
-		Integer[] imageIDs = {
-				R.drawable.blackpawn,
-				R.drawable.icon,
-				R.drawable.icon,
-				R.drawable.icon,
-				R.drawable.icon,
-				R.drawable.icon,
-				R.drawable.icon,
-				R.drawable.icon,
-				R.drawable.icon,
-				R.drawable.icon,
-				R.drawable.icon,
-				R.drawable.icon,
-				R.drawable.icon,
-				R.drawable.icon,
-				R.drawable.icon,
-				R.drawable.icon,
-		};
+		Integer[] imageList = new Integer[64];
 
 		public ImageAdapter(Context c)
 		{
 			context = c;
+			imageList[0] = R.drawable.blackrook;
+			imageList[1] = R.drawable.blackknight;
+			imageList[2] = R.drawable.blackbishop;
+			imageList[3] = R.drawable.blackqueen;
+			imageList[4] = R.drawable.blackking;
+			imageList[5] = R.drawable.blackbishop;
+			imageList[6] = R.drawable.blackknight;
+			imageList[7] = R.drawable.blackrook;
+			imageList[8] = R.drawable.blackpawn;
+			imageList[9] = R.drawable.blackpawn;
+			imageList[10] = R.drawable.blackpawn;
+			imageList[11] = R.drawable.blackpawn;
+			imageList[12] = R.drawable.blackpawn;
+			imageList[13] = R.drawable.blackpawn;
+			imageList[14] = R.drawable.blackpawn;
+			imageList[15] = R.drawable.blackpawn;
+
+			for(int i = 16; i<48; i++)
+				imageList[i] = R.drawable.emptyspot;
+
+			imageList[48] = R.drawable.whitepawn;
+			imageList[49] = R.drawable.whitepawn;
+			imageList[50] = R.drawable.whitepawn;
+			imageList[51] = R.drawable.whitepawn;
+			imageList[52] = R.drawable.whitepawn;
+			imageList[53] = R.drawable.whitepawn;
+			imageList[54] = R.drawable.whitepawn;
+			imageList[55] = R.drawable.whitepawn;
+			imageList[56] = R.drawable.whiterook;
+			imageList[57] = R.drawable.whiteknight;
+			imageList[58] = R.drawable.whitebishop;
+			imageList[59] = R.drawable.whitequeen;
+			imageList[60] = R.drawable.whiteking;
+			imageList[61] = R.drawable.whitebishop;
+			imageList[62] = R.drawable.whiteknight;
+			imageList[63] = R.drawable.whiterook;
+
 		}
 
 		//---returns the number of images---
 		public int getCount() {
-			return imageIDs.length;
+			return imageList.length;
 		}
 
 		//---returns the ID of an item---
@@ -455,13 +485,15 @@ public class Chess extends AppCompatActivity {
 			ImageView imageView;
 			if (convertView == null) {
 				imageView = new ImageView(context);
-				imageView.setLayoutParams(new GridView.LayoutParams(105, 105));
+				imageView.setLayoutParams(new GridView.LayoutParams(90, 90));
 				imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
 				imageView.setPadding(0, 0, 0, 0);
 			} else {
 				imageView = (ImageView) convertView;
 			}
-			imageView.setImageResource(imageIDs[position]);
+			if(imageList[position]!=null) {
+				imageView.setImageResource(imageList[position]);
+			}
 			return imageView;
 		}
 	}
