@@ -35,6 +35,9 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.Button;
 import java.util.ArrayList;
+import android.support.v7.app.ActionBar;
+import android.content.Intent;
+import android.view.MenuItem;
 
 public class Chess extends AppCompatActivity {
 	/*
@@ -82,6 +85,10 @@ public class Chess extends AppCompatActivity {
 		Button aiButton = (Button) findViewById(R.id.buttonAI);
 		Button drawButton = (Button) findViewById(R.id.buttonDraw);
 		Button resignButton = (Button) findViewById(R.id.buttonResign);
+
+		ActionBar actionBar = getSupportActionBar();
+		actionBar.setDisplayHomeAsUpEnabled(true);
+
 
 		chessGrid.setAdapter(imgAdapter);
 		chessGrid.setOnItemClickListener(new OnItemClickListener() {
@@ -198,7 +205,9 @@ public class Chess extends AppCompatActivity {
 				}
 				else {
 					draw = true;
+
 					Toast.makeText(getApplicationContext(), "The previous player has initiated a draw!", Toast.LENGTH_SHORT).show();
+					pausedGame = false;
 				}
 						runOnUiThread(new Runnable() {
 							@Override
@@ -214,8 +223,65 @@ public class Chess extends AppCompatActivity {
 
 		});
 
+		resignButton.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View view) {
+				if (turn == 1) {
+					Toast.makeText(getApplicationContext(), "Player Black Wins!", Toast.LENGTH_LONG).show();
+					gameContinue = false;
+					runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							playerTurn.post(new Runnable() {
+								@Override
+								public void run() {
+									playerTurn.setText("Player Black Wins!");
+								}
+							});
+
+						}
+					});
+				}
+				else {
+					Toast.makeText(getApplicationContext(), "Player White Wins!", Toast.LENGTH_LONG).show();
+					runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							playerTurn.post(new Runnable() {
+								@Override
+								public void run() {
+									playerTurn.setText("Player White Wins!");
+								}
+							});
+
+						}
+					});
+				}
+				runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						imgAdapter.paintBoard();
+						imgAdapter.notifyDataSetChanged();
+
+					}
+				});
+
+
+			}
+
+		});
+
 		Thread gameThread = new Thread(gameRun);
 		gameThread.start();
+	}
+
+	public boolean onOptionsItemSelected(MenuItem item){
+		Intent myIntent = new Intent(getApplicationContext(), HomeActivity.class);
+		startActivityForResult(myIntent, 0);
+		finish();
+		return true;
+
 	}
 
 
@@ -258,31 +324,23 @@ public class Chess extends AppCompatActivity {
 						continue;
 					input = initialCoords + nextCoords;
 
-					if(input.equals("") && draw)
-						continue;
-
-					if (input.equals("resign")) {
-						System.out.println("Black wins");
-						gameContinue = false;
+					if(input.equals("") && draw) {
+						turn = 0;
 						continue;
 					}
-
-					if (draw) {
-						if (input.equals("draw")) {
-							System.out.println("Draw");
-							gameContinue = false;
-							continue;
-						}
+					else
 						draw = false;
+					initialY = -1;
+					initialX = -1;
+					nextY = -1;
+					nextX = -1;
+					if(input.length() ==  4) {
+
+						initialY = Character.getNumericValue(input.charAt(0));
+						initialX = Character.getNumericValue(input.charAt(1));
+						nextY = Character.getNumericValue(input.charAt(2));
+						nextX = Character.getNumericValue(input.charAt(3));
 					}
-
-					if (input.contains("draw?"))
-						draw = true;
-
-					initialY = Character.getNumericValue(input.charAt(0));
-					initialX = Character.getNumericValue(input.charAt(1));
-					nextY = Character.getNumericValue(input.charAt(2));
-					nextX = Character.getNumericValue(input.charAt(3));
 
 					if ((initialX < 0 || initialX > 7) || (initialY < 0 || initialY > 7) || (nextX < 0 || nextX > 7) || (nextY < 0 || nextY > 7) || game.board[initialX][initialY].capacity == null || game.board[initialX][initialY].capacity.getColor() != turn || !game.board[initialX][initialY].capacity.makeMove(initialX, initialY, nextX, nextY)) {
 						runOnUiThread(new Runnable() {
@@ -294,7 +352,20 @@ public class Chess extends AppCompatActivity {
 						continue;
 					}
 					if (Chess.game.board[nextX][nextY].capacity instanceof King) {
-						System.out.println("White wins");
+
+						runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								playerTurn.post(new Runnable() {
+									@Override
+									public void run() {
+										Toast.makeText(getApplicationContext(), "Player White Wins!", Toast.LENGTH_LONG).show();
+										playerTurn.setText("Player White Wins!");
+									}
+								});
+
+							}
+						});
 						gameContinue = false;
 						continue;
 					}
@@ -377,12 +448,35 @@ public class Chess extends AppCompatActivity {
 
 					if (Chess.checkCondition(0)) {
 						if (Chess.checkmateCondition(0)) {
-							System.out.println("Checkmate");
-							System.out.println("White wins");
+							runOnUiThread(new Runnable() {
+								@Override
+								public void run() {
+									playerTurn.post(new Runnable() {
+										@Override
+										public void run() {
+											Toast.makeText(getApplicationContext(), "Checkmate! Player White Wins!", Toast.LENGTH_LONG).show();
+											playerTurn.setText("Player White Wins!");
+										}
+									});
+
+								}
+							});
 							gameContinue = false;
 							continue;
 						}
-						System.out.println("Check");
+						runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								playerTurn.post(new Runnable() {
+									@Override
+									public void run() {
+										Toast.makeText(getApplicationContext(), "Check!", Toast.LENGTH_LONG).show();
+									}
+								});
+
+							}
+						});
+
 					}
 				} else { //Black Player's Turn
 					if(!undoed) {
@@ -406,31 +500,24 @@ public class Chess extends AppCompatActivity {
 
 					input = initialCoords + nextCoords;
 
-					if(input.equals("") && draw)
-						continue;
-
-					if (input.equals("resign")) {
-						System.out.println("White wins");
-						gameContinue = false;
+					if(input.equals("") && draw) {
+						turn = 1;
 						continue;
 					}
-
-					if (draw) {
-						if (input.equals("draw")) {
-							System.out.println("Draw");
-							gameContinue = false;
-							continue;
-						}
+					else
 						draw = false;
+
+					initialY = -1;
+					initialX = -1;
+					nextY = -1;
+					nextX = -1;
+					if(input.length() ==  4) {
+
+						initialY = Character.getNumericValue(input.charAt(0));
+						initialX = Character.getNumericValue(input.charAt(1));
+						nextY = Character.getNumericValue(input.charAt(2));
+						nextX = Character.getNumericValue(input.charAt(3));
 					}
-
-					if (input.contains("draw?"))
-						draw = true;
-
-					initialY = Character.getNumericValue(input.charAt(0));
-					initialX = Character.getNumericValue(input.charAt(1));
-					nextY = Character.getNumericValue(input.charAt(2));
-					nextX = Character.getNumericValue(input.charAt(3));
 
 					if ((initialX < 0 || initialX > 7) || (initialY < 0 || initialY > 7) || (nextX < 0 || nextX > 7) || (nextY < 0 || nextY > 7) || game.board[initialX][initialY].capacity == null || game.board[initialX][initialY].capacity.getColor() != turn || !game.board[initialX][initialY].capacity.makeMove(initialX, initialY, nextX, nextY)) {
 						runOnUiThread(new Runnable() {
@@ -443,7 +530,19 @@ public class Chess extends AppCompatActivity {
 					}
 
 					if (Chess.game.board[nextX][nextY].capacity instanceof King) {
-						System.out.println("Black wins");
+						runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								playerTurn.post(new Runnable() {
+									@Override
+									public void run() {
+										Toast.makeText(getApplicationContext(), "Player Black Wins!", Toast.LENGTH_LONG).show();
+										playerTurn.setText("Player Black Wins!");
+									}
+								});
+
+							}
+						});
 						gameContinue = false;
 						continue;
 					}
@@ -523,16 +622,40 @@ public class Chess extends AppCompatActivity {
 
 					if (Chess.checkCondition(1)) {
 						if (Chess.checkmateCondition(1)) {
-							System.out.println("Checkmate");
-							System.out.println("Black wins");
+							runOnUiThread(new Runnable() {
+								@Override
+								public void run() {
+									playerTurn.post(new Runnable() {
+										@Override
+										public void run() {
+											Toast.makeText(getApplicationContext(), "Checkmate! Player Black Wins!", Toast.LENGTH_LONG).show();
+											playerTurn.setText("Player Black Wins!");
+										}
+									});
+
+								}
+							});
 							gameContinue = false;
 							continue;
 						}
-						System.out.println("Check");
+						runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								playerTurn.post(new Runnable() {
+									@Override
+									public void run() {
+										Toast.makeText(getApplicationContext(), "Check!", Toast.LENGTH_LONG).show();
+									}
+								});
+
+							}
+						});
 					}
 				}
 
 			}
+
+
 		}
 	};
 
