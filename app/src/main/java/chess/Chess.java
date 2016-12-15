@@ -183,10 +183,22 @@ public class Chess extends AppCompatActivity {
 				if (draw) {
 					Toast.makeText(getApplicationContext(), "The game ends in a draw!", Toast.LENGTH_LONG).show();
 					gameContinue = false;
+					runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							playerTurn.post(new Runnable() {
+								@Override
+								public void run() {
+									playerTurn.setText("Draw!");
+								}
+							});
+
+						}
+					});
 				}
 				else {
 					draw = true;
-					Toast.makeText(getApplicationContext(), "The previous player has initiated a draw!", Toast.LENGTH_LONG).show();
+					Toast.makeText(getApplicationContext(), "The previous player has initiated a draw!", Toast.LENGTH_SHORT).show();
 				}
 						runOnUiThread(new Runnable() {
 							@Override
@@ -222,6 +234,8 @@ public class Chess extends AppCompatActivity {
 
 			while (gameContinue) {
 				input = "";
+				initialCoords = "";
+				nextCoords = "";
 
 				if (turn == 1) {  //White Player's Turn
 					if(!undoed) {
@@ -240,9 +254,12 @@ public class Chess extends AppCompatActivity {
 
 					pausedGame = true;
 					while(pausedGame);
-					if(undoed || !gameContinue || draw)
+					if(undoed || !gameContinue )
 						continue;
 					input = initialCoords + nextCoords;
+
+					if(input.equals("") && draw)
+						continue;
 
 					if (input.equals("resign")) {
 						System.out.println("Black wins");
@@ -388,6 +405,9 @@ public class Chess extends AppCompatActivity {
 						continue;
 
 					input = initialCoords + nextCoords;
+
+					if(input.equals("") && draw)
+						continue;
 
 					if (input.equals("resign")) {
 						System.out.println("White wins");
