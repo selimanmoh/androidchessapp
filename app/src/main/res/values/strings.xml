@@ -4,4 +4,7 @@
     <string name="Undo">Undo</string>
     <string name="Draw">Draw</string>
     <string name="Resign">Resign</string>
+    <string name="Welcome">Welcome to the ChessApp! Press play to begin or playback to watch a selected game.</string>
+    <string name="play">Play</string>
+    <string name="playback">Playback</string>
 </resources>

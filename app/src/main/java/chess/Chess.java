@@ -21,6 +21,7 @@ import chessController.Pawn;
 import chessController.Queen;
 import chessController.Rook;
 
+import android.app.Activity;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.TextView;
@@ -38,6 +39,12 @@ import java.util.ArrayList;
 import android.support.v7.app.ActionBar;
 import android.content.Intent;
 import android.view.MenuItem;
+import android.app.AlertDialog;
+import android.text.InputType;
+import android.widget.EditText;
+import android.content.DialogInterface;
+import java.lang.String;
+
 
 public class Chess extends AppCompatActivity {
 	/*
@@ -73,6 +80,10 @@ public class Chess extends AppCompatActivity {
 	public static GridView chessGrid;
 	public static ImageAdapter imgAdapter;
 	public static ArrayList<String> inputs = new ArrayList<String>();
+	public static ArrayList<String> saveInputs;
+	public static String gameName = "";
+	public static Thread gameThread;
+
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -81,6 +92,7 @@ public class Chess extends AppCompatActivity {
 		playerTurn = (TextView) findViewById(R.id.playerTurn);
 		chessGrid = (GridView) findViewById(R.id.ChessGrid);
 		imgAdapter = new ImageAdapter(this);
+
 		Button undoButton = (Button) findViewById(R.id.buttonUndo);
 		Button aiButton = (Button) findViewById(R.id.buttonAI);
 		Button drawButton = (Button) findViewById(R.id.buttonDraw);
@@ -242,9 +254,12 @@ public class Chess extends AppCompatActivity {
 
 						}
 					});
+					pausedGame = false;
+
 				}
 				else {
 					Toast.makeText(getApplicationContext(), "Player White Wins!", Toast.LENGTH_LONG).show();
+					gameContinue = false;
 					runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
@@ -257,6 +272,7 @@ public class Chess extends AppCompatActivity {
 
 						}
 					});
+					pausedGame = false;
 				}
 				runOnUiThread(new Runnable() {
 					@Override
@@ -271,8 +287,42 @@ public class Chess extends AppCompatActivity {
 			}
 
 		});
+	}
 
-		Thread gameThread = new Thread(gameRun);
+	@Override
+	protected void onStart() {
+		super.onStart();
+		//showLog("Activity started");
+		game = new ChessBoard();
+		bKingX = 7;
+		bKingY = 4;
+		wKingX = 0;
+		wKingY = 4; //initial positions of kings
+		targetEnpassant = false;
+		pausedGame = true;
+		clicked = false;
+		initialCoords = "";
+		nextCoords = "";
+		turn = 0;
+		undoed = false;
+		undoCount = 0;
+		input = "";
+		draw = false;
+		gameContinue = true;
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				imgAdapter.paintBoard();
+				imgAdapter.notifyDataSetChanged();
+				playerTurn.setText("");
+
+			}
+		});
+		saveInputs = new ArrayList<String>();
+		ArrayList<String> saveInputs;
+		gameName = "";
+
+		gameThread = new Thread(gameRun);
 		gameThread.start();
 	}
 
@@ -655,9 +705,48 @@ public class Chess extends AppCompatActivity {
 
 			}
 
+			runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
 
+					AlertDialog.Builder builder = new AlertDialog.Builder(Chess.this);
+					builder.setTitle("Would you like to save this game? Type the game name below:");
+					final EditText save = new EditText(Chess.this);
+					save.setInputType(InputType.TYPE_CLASS_TEXT);
+					builder.setView(save);
+					builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							gameName = save.getText().toString();
+							saveInputs.addAll(inputs);
+							HomeActivity.addList(saveInputs, gameName);
+							startActivity(new Intent(Chess.this, HomeActivity.class));
+
+						}
+					});
+					builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							dialog.cancel();
+							startActivity(new Intent(Chess.this, HomeActivity.class));
+						}
+					});
+
+					builder.show();
+
+				}
+			});
+			try{
+				gameThread.join();
+			}catch(InterruptedException e){
+				//
+			}
+
+			finish();
 		}
 	};
+
+
 
 	/*
 	 * Resets all enpassant states for each pawn on a certain color's side.
