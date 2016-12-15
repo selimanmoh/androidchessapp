@@ -33,6 +33,8 @@ import android.widget.BaseAdapter;
 import android.content.Context;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.Button;
+import java.util.ArrayList;
 
 public class Chess extends AppCompatActivity {
 	/*
@@ -52,6 +54,8 @@ public class Chess extends AppCompatActivity {
 	public static boolean clicked = false;
 	public static String initialCoords;
 	public static String nextCoords;
+	public static int turn;
+	public static boolean undoed = false;
 
 	/*
 	 * @param args unused
@@ -60,6 +64,7 @@ public class Chess extends AppCompatActivity {
 	public TextView playerTurn;
 	public static GridView chessGrid;
 	public static ImageAdapter imgAdapter;
+	public static ArrayList<String> inputs = new ArrayList<String>();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -68,6 +73,7 @@ public class Chess extends AppCompatActivity {
 		playerTurn = (TextView) findViewById(R.id.playerTurn);
 		chessGrid = (GridView) findViewById(R.id.ChessGrid);
 		imgAdapter = new ImageAdapter(this);
+		Button undoButton = (Button) findViewById(R.id.buttonUndo);
 		chessGrid.setAdapter(imgAdapter);
 		chessGrid.setOnItemClickListener(new OnItemClickListener() {
 			@Override
@@ -86,6 +92,32 @@ public class Chess extends AppCompatActivity {
 			}
 		});
 
+		undoButton.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View view) {
+				undoed = true;
+				pausedGame = false;
+				if(inputs.size() > 0){
+					for(String input: inputs) System.out.println("inputs: " + input);
+					inputs.remove(inputs.size()-1);
+					Chess.game = StreamChess.streamChess(inputs);
+					Chess.game.printBoard();
+
+
+					runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							imgAdapter.paintBoard();
+							imgAdapter.notifyDataSetChanged();
+
+						}
+					});
+
+				}
+			}
+		});
+
 		Thread gameThread = new Thread(gameRun);
 		gameThread.start();
 	}
@@ -98,7 +130,7 @@ public class Chess extends AppCompatActivity {
 		/*
 		 * turn represents the turn of the game, in which player White is 1 and player Black is 0.
 		 */
-			int turn = 1;
+			turn = 1;
 			int initialX;
 			int initialY;
 			int nextX;
@@ -111,15 +143,24 @@ public class Chess extends AppCompatActivity {
 			while (gameContinue) {
 
 				if (turn == 1) {  //White Player's Turn
-					playerTurn.post(new Runnable(){
-						@Override
-						public void run() {
-							playerTurn.setText("White's Turn");
-						}
-					});
+					if(!undoed) {
+						playerTurn.post(new Runnable() {
+							@Override
+							public void run() {
+								playerTurn.setText("White's Turn");
+							}
+						});
+					}
+					else{
+						turn = 0;
+						undoed = false;
+						continue;
+					}
+
 					pausedGame = true;
 					while(pausedGame);
-
+					if(undoed)
+						continue;
 					input = initialCoords + nextCoords;
 
 					if (input.equals("resign")) {
@@ -214,8 +255,9 @@ public class Chess extends AppCompatActivity {
 						continue;
 					}
 					enpassantReset(0); //changes all current enpassant conditions to false for enemy pawns since a move was made
-					turn = 0;
 
+					turn = 0;
+					inputs.add(input);
 					runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
@@ -236,14 +278,24 @@ public class Chess extends AppCompatActivity {
 						System.out.println("Check");
 					}
 				} else { //Black Player's Turn
-					playerTurn.post(new Runnable(){
-						@Override
-						public void run() {
-							playerTurn.setText("Black's Turn");
-						}
-					});
+					if(!undoed) {
+						playerTurn.post(new Runnable() {
+							@Override
+							public void run() {
+								playerTurn.setText("Black's Turn");
+							}
+						});
+					}
+					else{
+						turn = 1;
+						undoed = false;
+						continue;
+					}
+
 					pausedGame = true;
 					while(pausedGame);
+					if(undoed)
+						continue;
 
 					input = initialCoords + nextCoords;
 
@@ -338,8 +390,9 @@ public class Chess extends AppCompatActivity {
 						continue;
 					}
 					enpassantReset(1); //changes all enpassant conditions of enemy pawns to false since a move was made
-					turn = 1;
 
+					turn = 1;
+					inputs.add(input);
 					runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
@@ -538,6 +591,7 @@ public class Chess extends AppCompatActivity {
 			return imageView;
 		}
 	}
+
 }
 
 

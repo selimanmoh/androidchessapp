@@ -74,5 +74,80 @@ public class ChessBoard {
 		}
 		
 	}
+	public void printBoard()
+	{
+		int file;
+		int rank;
+
+		for(rank = 7; rank >= 0; rank--)
+		{
+			for(file = 0; file < 8; file++)
+			{
+				ChessPiece temp = board[rank][file].capacity;
+
+				if(temp instanceof Rook)
+				{
+					if(temp.getColor() == 0)
+						System.out.print("bR ");
+					else if(temp.getColor() == 1)
+						System.out.print("wR ");
+				}
+
+				else if(temp instanceof Knight)
+				{
+					if(temp.getColor() == 0)
+						System.out.print("bN ");
+					else if(temp.getColor() == 1)
+						System.out.print("wN ");
+				}
+
+				else if(temp instanceof Bishop)
+				{
+					if(temp.getColor() == 0)
+						System.out.print("bB ");
+					else if(temp.getColor() == 1)
+						System.out.print("wB ");
+				}
+
+				else if(temp instanceof Queen)
+				{
+					if(temp.getColor() == 0)
+						System.out.print("bQ ");
+					else if(temp.getColor() == 1)
+						System.out.print("wQ ");
+				}
+
+				else if(temp instanceof King)
+				{
+					if(temp.getColor() == 0)
+						System.out.print("bK ");
+					else if(temp.getColor() == 1)
+						System.out.print("wK ");
+				}
+
+				else if(temp instanceof Pawn)
+				{
+					if(temp.getColor() == 0)
+						System.out.print("bp ");
+					else if(temp.getColor() == 1)
+						System.out.print("wp ");
+				}
+
+				else if(temp == null)
+				{
+					if(((rank%2 == 0) && (file%2 == 0)) || ((rank%2 != 0) && (file%2 !=0)))
+						System.out.print("## ");
+					else
+						System.out.print("   ");
+				}
+
+			}
+
+			System.out.println(rank + 1);
+		}
+
+		System.out.println(" a  b  c  d  e  f  g  h\n");
+
+	}
 	
 }
