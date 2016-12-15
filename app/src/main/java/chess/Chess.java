@@ -67,7 +67,7 @@ public class Chess extends AppCompatActivity {
 		chessGrid.setOnItemClickListener(new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-				int pos = (int)view.getTag();
+				//int pos = (int)view.getTag();
 				Toast.makeText(getApplicationContext(),
 						"Item Clicked: " + position, Toast.LENGTH_SHORT).show();
 
@@ -411,6 +411,24 @@ public class Chess extends AppCompatActivity {
 	public class ImageAdapter extends BaseAdapter
 	{
 		private Context context;
+		Integer[] imageIDs = {
+				R.drawable.blackpawn,
+				R.drawable.icon,
+				R.drawable.icon,
+				R.drawable.icon,
+				R.drawable.icon,
+				R.drawable.icon,
+				R.drawable.icon,
+				R.drawable.icon,
+				R.drawable.icon,
+				R.drawable.icon,
+				R.drawable.icon,
+				R.drawable.icon,
+				R.drawable.icon,
+				R.drawable.icon,
+				R.drawable.icon,
+				R.drawable.icon,
+		};
 
 		public ImageAdapter(Context c)
 		{
@@ -419,7 +437,7 @@ public class Chess extends AppCompatActivity {
 
 		//---returns the number of images---
 		public int getCount() {
-			return 0;
+			return imageIDs.length;
 		}
 
 		//---returns the ID of an item---
@@ -437,13 +455,13 @@ public class Chess extends AppCompatActivity {
 			ImageView imageView;
 			if (convertView == null) {
 				imageView = new ImageView(context);
-				imageView.setLayoutParams(new GridView.LayoutParams(185, 185));
-				imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-				imageView.setPadding(5, 5, 5, 5);
+				imageView.setLayoutParams(new GridView.LayoutParams(105, 105));
+				imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+				imageView.setPadding(0, 0, 0, 0);
 			} else {
 				imageView = (ImageView) convertView;
 			}
-			//imageView.setImageResource(imageIDs[position]);
+			imageView.setImageResource(imageIDs[position]);
 			return imageView;
 		}
 	}
