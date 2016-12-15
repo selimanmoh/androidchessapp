@@ -58,7 +58,8 @@ public class Chess extends AppCompatActivity {
 	 * @return nothing
 	 */
 	public TextView playerTurn;
-	public GridView chessGrid;
+	public static GridView chessGrid;
+	public static ImageAdapter imgAdapter;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -66,20 +67,20 @@ public class Chess extends AppCompatActivity {
 		setContentView(R.layout.activity_main);
 		playerTurn = (TextView) findViewById(R.id.playerTurn);
 		chessGrid = (GridView) findViewById(R.id.ChessGrid);
-		chessGrid.setAdapter(new ImageAdapter(this));
+		imgAdapter = new ImageAdapter(this);
+		chessGrid.setAdapter(imgAdapter);
 		chessGrid.setOnItemClickListener(new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-				System.out.println(position);
 				if(clicked){
 					clicked = false;
+					nextCoords = "" + (position%8) + ((int)Math.floor((63-position)/8)) + "";
 					pausedGame = false;
-					nextCoords = (position%8) + (Math.floor((63-position)/8)) + "";
-
 				}
 				else {
 					clicked = true;
-					initialCoords = (position%8) + (Math.floor((63-position)/8)) + "";
+					pausedGame = true;
+					initialCoords = "" + (position%8) + ((int)Math.floor((63-position)/8)) + "";
 				}
 
 			}
@@ -104,7 +105,6 @@ public class Chess extends AppCompatActivity {
 			int nextY;
 			boolean gameContinue = true;
 			boolean draw = false;
-			game.printBoard();
 
 			String input;
 
@@ -120,8 +120,6 @@ public class Chess extends AppCompatActivity {
 					pausedGame = true;
 					while(pausedGame);
 
-					input = "draw";
-					System.out.println();
 					input = initialCoords + nextCoords;
 
 					if (input.equals("resign")) {
@@ -218,7 +216,16 @@ public class Chess extends AppCompatActivity {
 					enpassantReset(0); //changes all current enpassant conditions to false for enemy pawns since a move was made
 					turn = 0;
 
-					Chess.game.printBoard();
+					runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							imgAdapter.paintBoard();
+							imgAdapter.notifyDataSetChanged();
+
+						}
+					});
+
+
 					if (Chess.checkCondition(0)) {
 						if (Chess.checkmateCondition(0)) {
 							System.out.println("Checkmate");
@@ -229,10 +236,16 @@ public class Chess extends AppCompatActivity {
 						System.out.println("Check");
 					}
 				} else { //Black Player's Turn
-					System.out.print("Black's move: ");
-					input = "draw";
-					System.out.println();
-					input = input.replaceAll("\\s+", "");
+					playerTurn.post(new Runnable(){
+						@Override
+						public void run() {
+							playerTurn.setText("Black's Turn");
+						}
+					});
+					pausedGame = true;
+					while(pausedGame);
+
+					input = initialCoords + nextCoords;
 
 					if (input.equals("resign")) {
 						System.out.println("White wins");
@@ -327,7 +340,15 @@ public class Chess extends AppCompatActivity {
 					enpassantReset(1); //changes all enpassant conditions of enemy pawns to false since a move was made
 					turn = 1;
 
-					Chess.game.printBoard();
+					runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							imgAdapter.paintBoard();
+							imgAdapter.notifyDataSetChanged();
+
+						}
+					});
+
 					if (Chess.checkCondition(1)) {
 						if (Chess.checkmateCondition(1)) {
 							System.out.println("Checkmate");
@@ -426,42 +447,58 @@ public class Chess extends AppCompatActivity {
 		public ImageAdapter(Context c)
 		{
 			context = c;
-			imageList[0] = R.drawable.blackrook;
-			imageList[1] = R.drawable.blackknight;
-			imageList[2] = R.drawable.blackbishop;
-			imageList[3] = R.drawable.blackqueen;
-			imageList[4] = R.drawable.blackking;
-			imageList[5] = R.drawable.blackbishop;
-			imageList[6] = R.drawable.blackknight;
-			imageList[7] = R.drawable.blackrook;
-			imageList[8] = R.drawable.blackpawn;
-			imageList[9] = R.drawable.blackpawn;
-			imageList[10] = R.drawable.blackpawn;
-			imageList[11] = R.drawable.blackpawn;
-			imageList[12] = R.drawable.blackpawn;
-			imageList[13] = R.drawable.blackpawn;
-			imageList[14] = R.drawable.blackpawn;
-			imageList[15] = R.drawable.blackpawn;
+			paintBoard();
 
-			for(int i = 16; i<48; i++)
-				imageList[i] = R.drawable.emptyspot;
+		}
 
-			imageList[48] = R.drawable.whitepawn;
-			imageList[49] = R.drawable.whitepawn;
-			imageList[50] = R.drawable.whitepawn;
-			imageList[51] = R.drawable.whitepawn;
-			imageList[52] = R.drawable.whitepawn;
-			imageList[53] = R.drawable.whitepawn;
-			imageList[54] = R.drawable.whitepawn;
-			imageList[55] = R.drawable.whitepawn;
-			imageList[56] = R.drawable.whiterook;
-			imageList[57] = R.drawable.whiteknight;
-			imageList[58] = R.drawable.whitebishop;
-			imageList[59] = R.drawable.whitequeen;
-			imageList[60] = R.drawable.whiteking;
-			imageList[61] = R.drawable.whitebishop;
-			imageList[62] = R.drawable.whiteknight;
-			imageList[63] = R.drawable.whiterook;
+		public void paintBoard(){
+			int rank;
+			int file;
+
+			for(rank = 0; rank < 8; rank++) {
+				for (file = 0; file < 8; file++) {
+					ChessPiece temp = Chess.game.board[rank][file].capacity;
+					int positionAbs;
+
+					positionAbs = (7 - rank) * 8;
+					positionAbs+= (file);
+
+					if (temp instanceof Rook) {
+						if (temp.getColor() == 0)
+							imageList[positionAbs] = R.drawable.blackrook;
+						else if (temp.getColor() == 1)
+							imageList[positionAbs] = R.drawable.whiterook;
+					} else if (temp instanceof Knight) {
+						if (temp.getColor() == 0)
+							imageList[positionAbs] = R.drawable.blackknight;
+						else if (temp.getColor() == 1)
+							imageList[positionAbs] = R.drawable.whiteknight;
+					} else if (temp instanceof Bishop) {
+						if (temp.getColor() == 0)
+							imageList[positionAbs] = R.drawable.blackbishop;
+						else if (temp.getColor() == 1)
+							imageList[positionAbs] = R.drawable.whitebishop;
+					} else if (temp instanceof Queen) {
+						if (temp.getColor() == 0)
+							imageList[positionAbs] = R.drawable.blackqueen;
+						else if (temp.getColor() == 1)
+							imageList[positionAbs] = R.drawable.whitequeen;
+					} else if (temp instanceof King) {
+						if (temp.getColor() == 0)
+							imageList[positionAbs] = R.drawable.blackking;
+						else if (temp.getColor() == 1)
+							imageList[positionAbs] = R.drawable.whiteking;
+					} else if (temp instanceof Pawn) {
+						if (temp.getColor() == 0)
+							imageList[positionAbs] = R.drawable.blackpawn;
+						else if (temp.getColor() == 1)
+							imageList[positionAbs] = R.drawable.whitepawn;
+					} else if (temp == null) {
+						imageList[positionAbs] = R.drawable.emptyspot;
+					}
+
+				}
+			}
 
 		}
 
@@ -493,6 +530,10 @@ public class Chess extends AppCompatActivity {
 			}
 			if(imageList[position]!=null) {
 				imageView.setImageResource(imageList[position]);
+				if((position%8)%2 == (((int)Math.floor((63-position)/8)))%2)
+					imageView.setBackgroundColor(getResources().getColor(R.color.Black));
+				else
+					imageView.setBackgroundColor(getResources().getColor(R.color.White));
 			}
 			return imageView;
 		}
