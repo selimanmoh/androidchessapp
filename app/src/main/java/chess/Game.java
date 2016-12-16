@@ -1,6 +1,7 @@
 package chess;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 
 /**
  * Created by selim on 12/15/2016.
@@ -9,11 +10,11 @@ import java.util.Calendar;
 public class Game {
     ArrayList<String> arr;
     String name;
-    Calendar date;
+    Date date;
 
     public Game(ArrayList<String> arr, String name){
         this.arr = arr;
         this.name = name;
-        date = Calendar.getInstance();
+        date = Calendar.getInstance().getTime();
     }
 }

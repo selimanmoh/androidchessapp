@@ -15,9 +15,17 @@ import android.widget.Button;
 import android.content.Intent;
 import android.content.Context;
 
+import java.util.Collections;
+import java.util.Comparator;
+
 import java.util.ArrayList;
 import java.util.List;
 import android.widget.Adapter;
+import android.widget.ToggleButton;
+import android.view.View.OnClickListener;
+import android.widget.BaseAdapter;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemLongClickListener;
 
 
 
@@ -26,12 +34,18 @@ public class HomeActivity extends AppCompatActivity {
     public static ArrayList<Game> gameInputs = new ArrayList<Game>();
     public static ListView list;
     public static ArrayAdapter<Game> gameAdapter;
+    public static ToggleButton toggle;
+    public static sortName sN;
+    public static sortDate sD;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.home);
         Button playButton = (Button)findViewById(R.id.buttonPlay);
-        Button playbackButton = (Button)findViewById(R.id.buttonPlayback);
+        toggle = (ToggleButton)findViewById(R.id.toggleButton);
+        sN = new sortName();
+        sD = new sortDate();
+
 
         playButton.setOnClickListener(new View.OnClickListener() {
 
@@ -41,15 +55,57 @@ public class HomeActivity extends AppCompatActivity {
             }
 
         });
+
+
         gameAdapter = new GameAdapter(this, gameInputs);
 
         list = (ListView)findViewById(R.id.gameList);
 
         list.setAdapter(gameAdapter);
+
+        list.setOnItemLongClickListener(new OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> arg0, View arg1,
+                                           int pos, long id) {
+
+                if (gameAdapter != null) {
+                    PlaybackView.getBoard(gameInputs.get(pos).arr);
+                    startActivity(new Intent(HomeActivity.this, PlaybackView.class));
+                }
+
+                return false;
+            }
+        });
+
+        toggle.setOnClickListener(new OnClickListener() {
+
+            @Override
+            public void onClick(View view) {
+                if(toggle.isChecked()){
+                    Collections.sort(gameInputs, sN);
+                }
+                else
+                    Collections.sort(gameInputs, sD);
+
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        gameAdapter.notifyDataSetChanged();}});
+
+            }
+        });
     }
 
     public static void addList(ArrayList<String> arr, String name){
         gameInputs.add(new Game(arr, name));
+        if(toggle.isChecked()){
+            Collections.sort(gameInputs, sN);
+        }
+        else
+            Collections.sort(gameInputs, sD);
+
+       toggle.setChecked(true);
     }
 
     public class GameAdapter extends ArrayAdapter<Game> {
@@ -68,8 +124,28 @@ public class HomeActivity extends AppCompatActivity {
 
             textView = (TextView) convertView;
 
-            textView.setText(game.name + game.date.toString());
+            textView.setText(game.name + "          " + game.date.toString());
+            textView.setTextSize(20);
+            textView.setTextColor(getResources().getColor(R.color.colorPrimaryDark));
             return convertView;
+        }
+    }
+
+    public class sortName implements Comparator{
+
+        public int compare(Object o1, Object o2) {
+            Game game1 = (Game) o1;
+            Game game2 = (Game) o2;
+            return game1.name.compareTo(game2.name);
+        }
+    }
+
+    public class sortDate implements Comparator{
+
+        public int compare(Object o1, Object o2) {
+            Game game1 = (Game) o1;
+            Game game2 = (Game) o2;
+            return game1.date.compareTo(game2.date);
         }
     }
 }

@@ -33,6 +33,7 @@ public class StreamChess {
         game = new ChessBoard();
         Chess.game.board = StreamChess.game.board;
         play(inputs);
+        System.out.println(inputs.size());
         return StreamChess.game;
     }
 
@@ -60,6 +61,7 @@ public class StreamChess {
                 }
                 else
                     return;
+
 
                 input = input.replaceAll("\\s+", "");
 

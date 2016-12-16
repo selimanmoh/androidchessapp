@@ -70,6 +70,7 @@ public class Chess extends AppCompatActivity {
 	public static String input;
 	public static boolean draw = false;
 	public static boolean gameContinue = true;
+	public static boolean playback = false;
 
 
 	/*
@@ -131,8 +132,6 @@ public class Chess extends AppCompatActivity {
 					if (inputs.size() > 0) {
 						inputs.remove(inputs.size() - 1);
 						Chess.game = StreamChess.streamChess(inputs);
-						Chess.game.printBoard();
-
 
 						runOnUiThread(new Runnable() {
 							@Override
@@ -309,6 +308,7 @@ public class Chess extends AppCompatActivity {
 		input = "";
 		draw = false;
 		gameContinue = true;
+		playback = false;
 		runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
@@ -708,32 +708,32 @@ public class Chess extends AppCompatActivity {
 			runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
+					if(!((Activity) Chess.this).isFinishing()) {
+						AlertDialog.Builder builder = new AlertDialog.Builder(Chess.this);
+						builder.setTitle("Would you like to save this game? Type the game name below:");
+						final EditText save = new EditText(Chess.this);
+						save.setInputType(InputType.TYPE_CLASS_TEXT);
+						builder.setView(save);
+						builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int which) {
+								gameName = save.getText().toString();
+								saveInputs.addAll(inputs);
+								HomeActivity.addList(saveInputs, gameName);
+								startActivity(new Intent(Chess.this, HomeActivity.class));
 
-					AlertDialog.Builder builder = new AlertDialog.Builder(Chess.this);
-					builder.setTitle("Would you like to save this game? Type the game name below:");
-					final EditText save = new EditText(Chess.this);
-					save.setInputType(InputType.TYPE_CLASS_TEXT);
-					builder.setView(save);
-					builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							gameName = save.getText().toString();
-							saveInputs.addAll(inputs);
-							HomeActivity.addList(saveInputs, gameName);
-							startActivity(new Intent(Chess.this, HomeActivity.class));
+							}
+						});
+						builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int which) {
+								dialog.cancel();
+								startActivity(new Intent(Chess.this, HomeActivity.class));
+							}
+						});
 
-						}
-					});
-					builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							dialog.cancel();
-							startActivity(new Intent(Chess.this, HomeActivity.class));
-						}
-					});
-
-					builder.show();
-
+						builder.show();
+					}
 				}
 			});
 			try{

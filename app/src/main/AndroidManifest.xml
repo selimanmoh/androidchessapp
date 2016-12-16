@@ -17,6 +17,9 @@
         </activity>
         <activity android:name=".Chess">
 
+    </activity>
+        <activity android:name=".PlaybackView">
+
         </activity>
     </application>
 

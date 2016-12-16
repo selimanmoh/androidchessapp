@@ -10,17 +10,6 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".HomeActivity">
 
-    <ListView
-        android:layout_width="match_parent"
-        android:layout_height="2.15in"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/buttonPlayback"
-        android:id="@+id/gameList"
-        android:headerDividersEnabled="true"
-        android:footerDividersEnabled="true"
-        android:background="?attr/colorButtonNormal" />
-
     <TextView
         android:text="@string/Welcome"
         android:layout_width="wrap_content"
@@ -39,15 +28,25 @@
         android:layout_height="wrap_content"
         android:id="@+id/buttonPlay"
         android:layout_below="@+id/textView"
-        android:layout_alignParentStart="true"
-        android:layout_marginStart="47dp" />
+        android:layout_toStartOf="@+id/toggleButton"
+        android:layout_marginEnd="13dp" />
 
-    <Button
-        android:text="@string/playback"
+    <ToggleButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/buttonPlayback"
+        android:id="@+id/toggleButton"
         android:layout_below="@+id/textView"
-        android:layout_alignParentEnd="true"
-        android:layout_marginEnd="26dp" />
+        android:layout_centerHorizontal="true"
+        android:textOff="@string/off"
+        android:textOn="@string/on" />
+
+    <ListView
+        android:layout_width="match_parent"
+        android:layout_height="2.15in"
+        android:id="@+id/gameList"
+        android:headerDividersEnabled="true"
+        android:footerDividersEnabled="true"
+        android:background="?attr/colorButtonNormal"
+        android:layout_below="@+id/buttonPlay"
+        android:layout_alignParentStart="true" />
 </RelativeLayout>
