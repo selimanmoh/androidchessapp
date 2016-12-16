@@ -65,14 +65,14 @@ public class StreamChess {
                 input = input.replaceAll("\\s+", "");
 
                 if(input.equals("resign")){
-                    System.out.println("Black wins");
+                    //System.out.println("Black wins");
                     gameContinue = false;
                     continue;
                 }
 
                 if(draw){
                     if(input.equals("draw")){
-                        System.out.println("Draw");
+                        //System.out.println("Draw");
                         gameContinue = false;
                         continue;
                     }
@@ -88,12 +88,12 @@ public class StreamChess {
                 nextX = Character.getNumericValue(input.charAt(3));
 
                 if((initialX < 0 || initialX > 7) || (initialY < 0 || initialY > 7) || (nextX < 0 || nextX > 7) || (nextY < 0 || nextY > 7) || game.board[initialX][initialY].capacity == null || game.board[initialX][initialY].capacity.getColor()!=turn || !game.board[initialX][initialY].capacity.makeMove(initialX, initialY, nextX, nextY)){
-                    System.out.println("Illegal move, try again\n");
+                   // System.out.println("Illegal move, try again\n");
                     draw = false;
                     continue;
                 }
                 if(StreamChess.game.board[nextX][nextY].capacity instanceof King){
-                    System.out.println("White wins");
+                   // System.out.println("White wins");
                     gameContinue = false;
                     continue;
                 }
@@ -141,7 +141,7 @@ public class StreamChess {
                 StreamChess.game.board[initialX][initialY].capacity = null;
 
                 if(checkCondition(1)){ //This move will cause a check condition and should be illegal
-                    System.out.println("Illegal move, try again\n");
+                    //System.out.println("Illegal move, try again\n");
                     draw = false;
 
                     StreamChess.game.board[initialX][initialY].capacity = StreamChess.game.board[nextX][nextY].capacity;
@@ -163,12 +163,12 @@ public class StreamChess {
 
                 if(StreamChess.checkCondition(0)){
                     if(StreamChess.checkmateCondition(0)){
-                        System.out.println("Checkmate");
-                        System.out.println("White wins");
+                        //System.out.println("Checkmate");
+                        //System.out.println("White wins");
                         gameContinue = false;
                         continue;
                     }
-                    System.out.println("Check");
+                    //System.out.println("Check");
                 }
             }
             else{ //Black Player's Turn
@@ -181,14 +181,14 @@ public class StreamChess {
                 input = input.replaceAll("\\s+", "");
 
                 if(input.equals("resign")){
-                    System.out.println("White wins");
+                    //System.out.println("White wins");
                     gameContinue = false;
                     continue;
                 }
 
                 if(draw){
                     if(input.equals("draw")){
-                        System.out.println("Draw");
+                        //System.out.println("Draw");
                         gameContinue = false;
                         continue;
                     }
@@ -204,13 +204,13 @@ public class StreamChess {
                 nextX = Character.getNumericValue(input.charAt(3));
 
                 if((initialX < 0 || initialX > 7) || (initialY < 0 || initialY > 7) || (nextX < 0 || nextX > 7) || (nextY < 0 || nextY > 7) || game.board[initialX][initialY].capacity == null || game.board[initialX][initialY].capacity.getColor()!=turn || !game.board[initialX][initialY].capacity.makeMove(initialX, initialY, nextX, nextY)){
-                    System.out.println("Illegal move, try again\n");
+                    //System.out.println("Illegal move, try again\n");
                     draw = false;
                     continue;
                 }
 
                 if(StreamChess.game.board[nextX][nextY].capacity instanceof King){
-                    System.out.println("Black wins");
+                    //System.out.println("Black wins");
                     gameContinue = false;
                     continue;
                 }
@@ -258,7 +258,7 @@ public class StreamChess {
 
                 StreamChess.game.board[initialX][initialY].capacity = null;
                 if(checkCondition(0)){ //This move will cause a check condition and should be illegal
-                    System.out.println("Illegal move, try again\n");
+                    //System.out.println("Illegal move, try again\n");
                     draw = false;
                     StreamChess.game.board[initialX][initialY].capacity = StreamChess.game.board[nextX][nextY].capacity;
                     StreamChess.game.board[nextX][nextY].capacity = temp;
@@ -278,12 +278,12 @@ public class StreamChess {
 
                 if(StreamChess.checkCondition(1)){
                     if(StreamChess.checkmateCondition(1)){
-                        System.out.println("Checkmate");
-                        System.out.println("Black wins");
+                        //System.out.println("Checkmate");
+                        //System.out.println("Black wins");
                         gameContinue = false;
                         continue;
                     }
-                    System.out.println("Check");
+                    //System.out.println("Check");
                 }
             }
 
