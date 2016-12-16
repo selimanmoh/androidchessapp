@@ -213,6 +213,7 @@ public class Chess extends AppCompatActivity {
 
 						}
 					});
+					pausedGame = false;
 				}
 				else {
 					draw = true;

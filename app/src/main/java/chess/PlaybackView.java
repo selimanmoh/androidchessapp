@@ -73,7 +73,6 @@ public class PlaybackView extends AppCompatActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.playback);
-		//playerTurn = (TextView) findViewById(R.id.playerTurn);
 		chessGrid = (GridView) findViewById(R.id.ChessGrid2);
 		imgAdapter = new ImageAdapter(this);
 
@@ -117,7 +116,16 @@ public class PlaybackView extends AppCompatActivity {
 	@Override
 	protected void onStart() {
 		super.onStart();
-		//stringStream = new ArrayList<String>();
+		game = new ChessBoard();
+
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				PlaybackView.imgAdapter.paintBoard();
+				PlaybackView.imgAdapter.notifyDataSetChanged();
+
+			}
+		});
 		streamCounter = 0;
 	}
 
@@ -132,8 +140,13 @@ public class PlaybackView extends AppCompatActivity {
 			PlaybackView.game = StreamChess.streamChess(new ArrayList<String>(stringStream.subList(0, i+1)));
 		}
 
-		PlaybackView.game.printBoard();
-
+		if(streamCounter>=stringStream.size()) {
+			runOnUiThread(new Runnable() {
+				public void run() {
+					Toast.makeText(getApplicationContext(), "No more moves!", Toast.LENGTH_SHORT).show();
+				}
+			});
+		}
 		PlaybackView.imgAdapter.notifyDataSetChanged();
 	}
 
