@@ -307,6 +307,7 @@ public class Chess extends AppCompatActivity {
 		undoed = false;
 		undoCount = 0;
 		input = "";
+		inputs = new ArrayList<String>();
 		draw = false;
 		gameContinue = true;
 		playback = false;
